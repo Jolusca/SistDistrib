@@ -1,0 +1,15 @@
+
+\section{Arquitetura Distribuída do Sistema}
+
+\subsection{Topologia Híbrida:}  Divisão de responsabilidades entre o cliente local (OpenCV) e a infraestrutura em nuvem (S3, Lambda, Textract, DynamoDB).
+
+\subsection{Fluxo Orientado a Eventos:} Como o upload de uma imagem na nuvem dispara de forma assíncrona o processamento de OCR e a gravação no banco NoSQL.
+
+\subsection{Modelagem de Dados:} Estrutura do registro salvo no banco (Nome, Timestamp e Link da imagem no S3).
+
+
+
+
+
+
+

@@ -1,0 +1,66 @@
+\input{preamble}
+\usepackage{caption}
+\begin{document}
+
+% Remove page number
+\clearpage
+\thispagestyle{empty}
+
+\begin{bfseries}
+\begin{center}
+
+\includegraphics[scale=0.12]{images/logo-ufc.PNG} \\
+\vspace{-4pt} 
+UNIVERSIDADE FEDERAL DO CEARÁ \\
+\vspace{4pt} 
+CENTRO DE TECNOLOGIA \\
+\vspace{4pt} 
+DEPARTAMENTO DE ENGENHARIA DA COMPUTAÇÃO \\
+\vspace{4pt}
+PROCESSAMENTO DE IMAGENS E SISTEMAS EM NUVEM\\
+\vspace{4pt}
+SEMESTRE 2026.1 \\
+
+
+\vspace*{\fill}
+\textbf{TRabalho de Processamento Digital de Imagens e Desenvolvimento de Aplicações Distribuídas}
+\vspace*{\fill}
+
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+    \setlength{\itemsep}{0pt}
+    \item[] João Lucas Oliveira Mota - 509597
+    \item[] Augusto Freitas
+    \item[] Gabriel Miranda
+
+\end{itemize}
+
+\end{bfseries}
+\newpage
+
+\renewcommand{\contentsname}{Sumário} % Garante o nome correto
+\tableofcontents
+\newpage
+
+% -------------------------
+% Seções
+% -------------------------
+\input{secoes/01-introducao}
+\newpage
+\input{secoes/02-arquitetura}
+\newpage
+\input{secoes/03-PDI}
+\newpage
+\input{secoes/04-resultados}
+
+
+
+\bibliographystyle{sbc}
+\bibliography{referencias}
+\clearpage
+\appendix
+\input{secoes/apendice-a}
+\end{document}
+
+\end{document}

@@ -50,3 +50,17 @@ O sistema visa automatizar o registro de jornada de trabalho através de visão 
 3. A foto é enviada para o serviço de armazenamento (S3).
 4. O upload dispara uma função (Lambda) que solicita o OCR ao serviço de IA (Textract).
 5. O nome extraído e o horário são validados e enviados para o banco de dados final (Firebase/DynamoDB).
+
+
+## 5. Estrutura de Diretórios do Projeto
+
+```text
+sistema-ponto-distribuido/
+├── edge_node/                  # Código que roda localmente na câmera
+│   ├── main.py                 # Loop principal do OpenCV e captura
+│   ├── uploader.py             # Lógica de envio de arquivos para o S3
+│   └── requirements.txt        # Dependências locais (opencv-python, boto3)
+│
+└── cloud_serverless/           # Código que será implantado na AWS
+    ├── lambda_function.py      # Código orquestrador do AWS Lambda
+    └── iam_policy.json         # Permissões de segurança para os serviços

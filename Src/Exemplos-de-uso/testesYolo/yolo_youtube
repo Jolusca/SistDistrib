@@ -1,0 +1,69 @@
+import cv2
+import yt_dlp
+from flask import Flask, Response
+from ultralytics import YOLO
+
+app = Flask(__name__)
+model = YOLO('yolov8n.pt')
+
+def get_youtube_stream_url(youtube_url):
+    """Função auxiliar para extrair o link direto do MP4 do YouTube"""
+    # Configuramos para pegar a melhor qualidade de vídeo (sem áudio para ficar mais leve)
+    ydl_opts = {'format': 'bestvideo[ext=mp4]/best'}
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        # Extrai as informações sem baixar o vídeo
+        info = ydl.extract_info(youtube_url, download=False)
+        return info['url']
+
+def generate_frames():
+    # 1. Coloque o link do vídeo do YouTube aqui
+    youtube_link = "https://www.youtube.com/watch?v=ORrrKXGx2SE"
+    
+    print("Extraindo link do YouTube... Aguarde.")
+    stream_url = get_youtube_stream_url(youtube_link)
+    print("Link extraído! Iniciando a YOLO...")
+
+    # 2. Passamos o link bruto para o OpenCV
+    # Aqui é Inicializada a captura da webcam (0 é a câmera padrão)
+    # Se for um vídeo ou câmera IP, substitua 0 pela URL/caminho
+    # O OpenCV não entende páginas web; ele precisa do link direto do arquivo de vídeo puro
+    cap = cv2.VideoCapture(stream_url)
+
+    while True:
+        success, frame = cap.read()
+        if not success:
+            # Se o vídeo acabar, ele sai do loop
+            print("Fim do vídeo ou erro na leitura.")
+            break
+        
+        # Faz a predição detectando apenas PESSOAS (classe 0)
+        results = model(frame, classes=[0]) 
+        
+        annotated_frame = results[0].plot()
+
+        ret, buffer = cv2.imencode('.jpg', annotated_frame)
+        frame_bytes = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+    cap.release()
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/')
+def index():
+    return '''
+    <html>
+        <head><title>YOLO YouTube Stream</title></head>
+        <body>
+            <h1>Detecção de Objetos: Vídeo do YouTube</h1>
+            <img src="/video_feed" width="800" />
+        </body>
+    </html>
+    '''
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=False)

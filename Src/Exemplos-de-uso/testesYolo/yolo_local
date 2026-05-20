@@ -1,0 +1,51 @@
+import cv2
+from flask import Flask, Response
+from ultralytics import YOLO
+
+
+app = Flask(__name__)
+model = YOLO('yolov8n.pt')
+
+def generate_frames():
+    cap = cv2.VideoCapture(0)
+
+    while True:
+        success, frame = cap.read()
+        if not success:
+            print("Erro ao acessar a câmera.")
+            break
+
+        results = model(frame, classes=[0])
+        annotated_frame = results[0].plot()
+
+        # Codifica o frame resultante para o formato JPEG
+        ret, buffer = cv2.imencode('.jpg', annotated_frame)
+        frame_bytes = buffer.tobytes()
+
+        # Retorna o frame no formato multipart/x-mixed-replace (padrão para streaming MJPEG)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+    cap.release()
+
+@app.route('/video_feed')
+def video_feed():
+    # Rota que o servidor remoto/cliente acessará para ver o vídeo
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/')
+def index():
+    # Uma página HTML simples para visualizar o stream
+    return '''
+    <html>
+        <head><title>YOLO Real-Time Stream</title></head>
+        <body>
+            <h1>Detecção de Objetos com YOLO</h1>
+            <img src="/video_feed" width="800" />
+        </body>
+    </html>
+    '''
+
+if __name__ == '__main__':
+    # Roda o servidor na porta 5000
+    app.run(host='0.0.0.0', port=5000, debug=False)
