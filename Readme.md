@@ -9,6 +9,7 @@ O sistema visa automatizar o registro de jornada de trabalho através de visão 
 ## 2. Arquitetura do Sistema
 
 * **Módulo Local (Edge Computing):**
+* Captura do vídeo através da câmera do celular com o app ipCAM
 * Execução de algoritmo de detecção de geometria em tempo real.
 * Captura de frame estático apenas sob detecção de gatilho (cartão de identificação).
 * Envio assíncrono da imagem para armazenamento em nuvem.
