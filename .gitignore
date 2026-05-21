@@ -1,0 +1,50 @@
+# Arquivos auxiliares do LaTeX
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.swp
+
+# Bibliografia (BibTeX / Biber)
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+
+# SyncTeX (usado para navegação entre o código e o PDF)
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+# Arquivos do LaTeX Workshop e compiladores auxiliares
+*.fdb_latexmk
+*.xdv
+
+# Índices e glossários
+*.idx
+*.ilg
+*.ind
+*.ist
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+*.glsdefs
+*.xdy
+
+# Diretórios de saída (caso tenha configurado o VS Code para usar um)
+out/
+build/
