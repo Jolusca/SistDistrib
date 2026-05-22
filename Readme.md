@@ -1,3 +1,7 @@
+# TODO
+- [ ] Identificação facial?
+
+
 
 # Planejamento de Projeto: Sistema de Ponto Eletrônico Distribuído (Versão CNN ONNX)
 
