@@ -2,13 +2,14 @@ import cv2
 from ultralytics import YOLO
 
 # Configurações
-stream_url = "http://192.168.18.103:8080/video"#Ajustar o IP para cada iteração
+#stream_url = "http://192.168.18.103:8080/video"#Ajustar o IP para cada iteração
 modelo = YOLO("yolov8n.pt")  # Modelo nano
 frame_skip = 2  # Pula frames
 frame_count = 0
 
-# Abre o stream
-cap = cv2.VideoCapture(stream_url, cv2.CAP_FFMPEG)
+# # Abre o stream
+# cap = cv2.VideoCapture(stream_url, cv2.CAP_FFMPEG)
+cap = cv2.VideoCapture(0, cv2.CAP_FFMPEG)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
