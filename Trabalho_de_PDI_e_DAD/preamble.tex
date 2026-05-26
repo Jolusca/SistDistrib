@@ -17,6 +17,16 @@
 \usepackage{float}         % Ajuda a fixar imagens com [H]
 \graphicspath{ {./images/} }
 
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+
+% Definição dos estilos dos blocos do fluxograma
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!20]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!20]
+\tikzstyle{process} = [rectangle, minimum width=3.5cm, minimum height=1cm, text centered, draw=black, fill=orange!20]
+\tikzstyle{decision} = [diamond, aspect=2, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!20]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
 % --- Títulos (Configuração correta para Sumário e Numeração) ---
 \usepackage{titlesec}
 \titleformat{\section}{\bfseries\Large}{\thesection}{1em}{}

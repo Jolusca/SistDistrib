@@ -1,67 +1,66 @@
-# Planejamento de Projeto: Sistema de Ponto Eletrônico Distribuído
+# Planejamento de Projeto: Sistema de Ponto Eletrônico Distribuído (Arquitetura Híbrida)
 
 ## 1. Visão Geral
 
-O sistema visa automatizar o registro de jornada de trabalho através de visão computacional e arquitetura distribuída. A solução utiliza o processamento na borda (Edge) para reduzir o consumo de banda e serviços em nuvem para inteligência e persistência de dados.
-
-
+O sistema automatiza o registro de jornada de trabalho utilizando visão computacional (ArcFace) e busca vetorial em nuvem (Qdrant). A arquitetura separa o processamento de imagem na borda (Edge) da validação de regras de negócio na nuvem (AWS), garantindo segurança, escalabilidade e custo otimizado.
 
 ## 2. Arquitetura do Sistema
 
-* **Módulo Local (Edge Computing):**
-* Captura do vídeo através da câmera do celular com o app ipCAM
-* Execução de algoritmo de detecção de geometria em tempo real.
-* Captura de frame estático apenas sob detecção de gatilho (cartão de identificação).
-* Envio assíncrono da imagem para armazenamento em nuvem.
+### **Módulo Local (Edge Computing):**
+* Captura de vídeo via OpenCV.
+* Extração de características (vetor de 512 dimensões) localmente via ArcFace.
+* Envio apenas dos dados numéricos (vetores) para a API na nuvem.
+  
 
 
-* **Módulo Nuvem (Cloud Serverless):**
-* **Armazenamento:** Repositório de imagens para auditoria e processamento.
-* **Processamento:** Função orquestradora disparada por eventos de upload.
-* **OCR & Inteligência:** Serviço especializado para extração de caracteres e identificação de nomes.
-* **Persistência:** Banco de dados externo para armazenamento dos registros de ponto.
-
-
-
-
-
-## 3. Requisitos de Sistema
-
-### 3.1. Requisitos Funcionais
-
-1. **Detecção de ROI:** O sistema deve identificar localmente a região de interesse (cartão) no fluxo de vídeo.
-2. **Upload por Evento:** A imagem deve ser enviada para a nuvem apenas quando um cartão for detectado.
-3. **Extração de Dados:** O sistema deve converter a imagem em texto para identificar o nome do funcionário.
-4. **Sincronização de Horário:** O registro deve conter o timestamp preciso do momento da captura.
-5. **Integração Externa:** Os dados processados devem ser salvos em um banco de dados NoSQL remoto.
-
-### 3.2. Requisitos Não Funcionais
-
-1. **Eficiência de Rede:** Ocupação mínima de banda larga, evitando streaming de vídeo para a nuvem.
-2. **Escalabilidade:** Capacidade de processar múltiplas requisições simultâneas de diferentes pontos de acesso.
-3. **Disponibilidade:** Operação baseada em serviços sob demanda, garantindo funcionamento contínuo sem gestão de servidores.
-4. **Auditabilidade:** Manutenção da imagem original como evidência do registro de ponto.
+### **Módulo Nuvem (Cloud Serverless & Database):**
+* **Orquestração (AWS Lambda):** Validação de horário, sanitização de dados e orquestração da busca.
+* **Banco Vetorial (Qdrant Cloud):** Motor de busca de similaridade facial (por semelhança entre vetores).
+* **Armazenamento de Fotos (S3):** Armazenamento de fotos originais via SDK Boto3 para auditoria.
+* **SGBD (RDS):** Registro final do ponto e dados relacionais do funcionário.
 
 
 
-## 4. Fluxo de Funcionamento
+## 3. Fluxo de Funcionamento
 
-1. O funcionário apresenta o cartão à câmera local.
-2. O software de borda detecta o retângulo do cartão e captura uma foto.
-3. A foto é enviada para o serviço de armazenamento (S3).
-4. O upload dispara uma função (Lambda) que solicita o OCR ao serviço de IA (Textract).
-5. O nome extraído e o horário são validados e enviados para o banco de dados final (Firebase/DynamoDB).
+1. O funcionário posiciona o rosto diante da câmera.
+2. O **OpenCV** detecta a face e o **ArcFace** converte a imagem em um vetor numérico de 512 dimensões.
+3. O script local envia o vetor para o **API Gateway/Lambda** na AWS.
+4. O **Lambda** registra o timestamp oficial, valida regras de negócio (RDS) e consulta o **Qdrant** por similaridade.
+5. Se identificado, o ponto é gravado com o horário da nuvem no banco de dados.
 
-
-## 5. Estrutura de Diretórios do Projeto
+## 4. Estrutura de Diretórios do Projeto
 
 ```text
 sistema-ponto-distribuido/
-├── edge_node/                  # Código que roda localmente na câmera
-│   ├── main.py                 # Loop principal do OpenCV e captura
-│   ├── uploader.py             # Lógica de envio de arquivos para o S3
-│   └── requirements.txt        # Dependências locais (opencv-python, boto3)
+├── edge_node/                  # Processamento na borda
+│   ├── main.py                 # Captura OpenCV + Extração ArcFace
+│   ├── uploader.py             # Integração S3 (Boto3)
+│   └── requirements.txt        # Dependências (opencv-python, deepface, boto3)
 │
-└── cloud_serverless/           # Código que será implantado na AWS
-    ├── lambda_function.py      # Código orquestrador do AWS Lambda
-    └── iam_policy.json         # Permissões de segurança para os serviços
+├── cloud_serverless/           # Lógica na nuvem (AWS)
+│   ├── lambda_function.py      # Orquestrador (Validação + Qdrant API)
+│   ├── requirements.txt        # Dependências Lambda (qdrant-client)
+│   └── iam_policy.json         # Permissões S3/RDS/Lambda
+
+```
+
+## 5. Fluxograma Lógico
+
+
+```mermaid
+graph LR
+    subgraph "Edge (Local)"
+        A[Webcam] --> B[OpenCV: Detecção]
+        B --> C[ArcFace: Vetor 512-dim]
+    end
+
+    subgraph "Cloud (AWS & Qdrant)"
+        C --> D{Lambda: Validação e Timestamp}
+        D -- "Busca Vetorial" --> E[Qdrant Cloud]
+        E --> F[RDS: Log de Ponto]
+    end
+
+    F --> G[Interface: Autenticado]
+
+```
