@@ -1,33 +1,34 @@
 import os
 import numpy as np
-from arcface import ArcFace
+from deepface import DeepFace
+import csv
 
-def extrair_e_salvar_vetor(caminho_imagem, caminho_txt):
-    if not os.path.exists(caminho_imagem):
-        print(f"Erro: A imagem '{caminho_imagem}' não foi encontrada.")
-        return
-
-    print("Inicializando o modelo ArcFace e processando a imagem...")
-    try:
-        # Inicializa a ferramenta de reconhecimento do ArcFace
-        face_rec = ArcFace.ArcFace()
-        
-        # Calcula o embedding (vetor de características) da imagem
-        vetor = face_rec.calc_emb(caminho_imagem)
-        
-        # Salva o vetor no arquivo de texto (um número por linha)
-        np.savetxt(caminho_txt, vetor, fmt='%f')
-        
-        print("\nProcessamento concluído com sucesso!")
-        print(f"Arquivo gerado: {caminho_txt}")
-        print(f"Dimensões do vetor: {vetor.shape}")
-        
-    except Exception as erro:
-        print(f"Ocorreu um erro durante o processamento: {erro}")
-
-if __name__ == "__main__":
-    # Defina aqui o nome da sua imagem e do arquivo de saída
-    IMAGEM_ENTRADA = "Src/imagensdeTeste/imagemPerfil.jpeg"
-    ARQUIVO_SAIDA = "vetor_rosto.txt"
+# Exemplo de extração de embeddings com ArcFace
+try:
+    print("Inicializando o modelo ArcFace via DeepFace...")
     
-    extrair_e_salvar_vetor(IMAGEM_ENTRADA, ARQUIVO_SAIDA)
+    # Substitua pelo caminho da sua imagem de captura
+    caminho_imagem = "Src/imagensdeTeste/imagemPerfil.jpeg" 
+    
+    embedding_objs = DeepFace.represent(
+        img_path = caminho_imagem, 
+        model_name = "ArcFace",
+        enforce_detection = True  # Garante que um rosto precisa ser detectado
+    )
+    
+    # O embedding é o vetor numérico que representa o rosto
+    embedding = embedding_objs[0]["embedding"]
+
+
+    nome_arquivo_csv = "Src/embedding_rosto.csv"
+
+    with open(nome_arquivo_csv, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Indice", "Valor_Embedding"])
+        for i, valor in enumerate(embedding):
+            writer.writerow([i, valor])
+
+    print(f"Vetor exportado com sucesso para tabela em: {nome_arquivo_csv}")
+
+except Exception as e:
+    print("Ocorreu um erro durante o processamento:", str(e))

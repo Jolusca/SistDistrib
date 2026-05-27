@@ -1,14 +1,7 @@
-
 \section{Arquitetura Distribuída do Sistema}
 
-\subsection{Topologia Híbrida:}  Divisão de responsabilidades entre o cliente local (OpenCV) e a infraestrutura em nuvem (S3, Lambda, Qdrant).
+\subsection{Topologia Híbrida:} Divisão de responsabilidades entre o cliente local (Edge), que gerencia a captura com OpenCV e a extração local de embeddings via DeepFace (ArcFace), e a infraestrutura em nuvem (S3, Lambda, Qdrant) responsável pelo processamento pesado e busca vetorial.
 
 \subsection{Fluxo Orientado a Eventos:} Como o upload de uma imagem na nuvem dispara de forma assíncrona o processamento de reconhecimento facial e a gravação no banco de dados vetorial.
 
 \subsection{Modelagem de Dados:} Estrutura do registro salvo no banco (Nome, Timestamp e Vetor de Características).
-
-
-
-
-
-

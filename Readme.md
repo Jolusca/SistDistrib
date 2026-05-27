@@ -1,3 +1,5 @@
+# Talvez a biblioteca so funcione em uma versão antiga do python (3.11.10)
+
 # Planejamento de Projeto: Sistema de Ponto Eletrônico Distribuído (Arquitetura Híbrida)
 
 ## 1. Visão Geral
@@ -7,11 +9,11 @@ O sistema automatiza o registro de jornada de trabalho utilizando visão computa
 ## 2. Arquitetura do Sistema
 
 ### **Módulo Local (Edge Computing):**
-* Captura de vídeo via OpenCV.
-* Extração de características (vetor de 512 dimensões) localmente via ArcFace.
-* Envio apenas dos dados numéricos (vetores) para a API na nuvem.
-  
 
+* Captura de vídeo em tempo real utilizando OpenCV.
+* Detecção, alinhamento e recorte do rosto integrados via framework DeepFace.
+* Extração de características faciais (geração do vetor de 512 dimensões) localmente utilizando o modelo ArcFace.
+* Envio otimizado apenas dos dados numéricos (embeddings) para a API na nuvem, reduzindo a largura de banda necessária na rede.
 
 ### **Módulo Nuvem (Cloud Serverless & Database):**
 * **Orquestração (AWS Lambda):** Validação de horário, sanitização de dados e orquestração da busca.
