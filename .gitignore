@@ -48,3 +48,9 @@
 # Diretórios de saída (caso tenha configurado o VS Code para usar um)
 out/
 build/
+
+
+#venv
+
+venv/
+.venv/
