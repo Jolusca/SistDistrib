@@ -39,6 +39,9 @@ if len(sys.argv) > 1:
     s = sys.argv[1]
 
 source = cv2.VideoCapture(s)
+#source = cv2.VideoCapture("http://192.168.18.19:8080/video")
+
+
 
 win_name = "Camera Preview"
 cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
