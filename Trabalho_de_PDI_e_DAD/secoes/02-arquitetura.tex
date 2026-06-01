@@ -2,6 +2,28 @@
 
 \subsection{Topologia Híbrida:} Divisão de responsabilidades entre o cliente local (Edge), que gerencia a captura com OpenCV e a extração local de embeddings via DeepFace (ArcFace), e a infraestrutura em nuvem (S3, Lambda, Qdrant) responsável pelo processamento pesado e busca vetorial.
 
+\subsection{Reconhecimento Facial com DeepFace e ArcFace:}
+
+O DeepFace é utilizado como uma biblioteca de apoio para facilitar a integração de modelos de reconhecimento facial baseados em aprendizado profundo. Ele evita a necessidade de implementar manualmente toda a estrutura de reconhecimento facial, oferecendo recursos prontos para etapas como detecção, alinhamento, representação e verificação de faces. \cite{du2022elements}.   Além disso, por funcionar como uma estrutura híbrida, permite utilizar diferentes modelos já conhecidos na área, como VGG-Face, FaceNet, OpenFace, DeepID, Dlib e ArcFace.  \cite{deepfacegithub}.
+
+No projeto, o ArcFace é utilizado por meio do DeepFace para converter cada face capturada em um vetor numérico, chamado de embedding facial. Esse vetor representa características relevantes do rosto e permite que a comparação entre pessoas seja feita de forma matemática, em vez de comparar diretamente as imagens. A principal contribuição do ArcFace está na função de perda chamada \textit{Additive Angular Margin Loss}, que melhora a separação entre diferentes identidades no espaço vetorial. Enquanto modelos tradicionais baseados em softmax aprendem principalmente a classificar imagens em categorias, o ArcFace busca gerar representações mais discriminativas, aproximando embeddings de uma mesma pessoa e afastando embeddings de pessoas diferentes por meio de uma margem angular aditiva. Dessa forma, a comparação facial passa a considerar a separação entre os vetores em um espaço angular, tornando o reconhecimento mais adequado para cenários com variações de iluminação, pose e expressão facial. \cite{deng2019arcface}
+
+A formulação do ArcFace parte da normalização dos pesos da última camada e dos vetores de características, de modo que a comparação passe a depender principalmente do ângulo entre os vetores. A função de perda pode ser representada, de forma resumida, por:
+
+\[
+L = -\frac{1}{N}\sum_{i=1}^{N}
+\log
+\frac{e^{s\cos(\theta_{y_i}+m)}}
+{e^{s\cos(\theta_{y_i}+m)} + \sum_{j=1, j \neq y_i}^{n} e^{s\cos(\theta_j)}}
+\]
+
+Nessa expressão, \(N\) representa o número de amostras, \(y_i\) é a classe correta da amostra \(i\), \(\theta_{y_i}\) é o ângulo entre o vetor de características e o peso da classe correta, \(m\) é a margem angular adicionada e \(s\) é um fator de escala. A adição da margem \(m\) força o modelo a exigir uma separação angular maior para classificar corretamente uma face, tornando os embeddings mais discriminativos \cite{deng2019arcface}.
+
+No funcionamento do sistema, a câmera captura continuamente o vídeo no cliente local. Quando um rosto é identificado no frame, a região facial é processada pelo DeepFace utilizando o ArcFace como modelo de representação. O resultado dessa etapa é um embedding facial, isto é, um vetor numérico que resume as características relevantes da face capturada. Em vez de comparar imagens diretamente, o sistema compara esse vetor com os vetores previamente cadastrados no banco.
+
+A decisão de liberar ou recusar a entrada é tomada a partir da similaridade entre o embedding da face capturada e os embeddings cadastrados. Caso a distância entre os vetores seja pequena, ou a similaridade seja maior que um determinado limiar, o sistema entende que a pessoa foi reconhecida. 
+
+Dessa forma, o DeepFace atua como camada de integração para o uso de modelos de reconhecimento facial, enquanto o ArcFace é responsável pela geração de embeddings discriminativos. Essa combinação permite que o sistema seja organizado em etapas bem definidas: captura da imagem, detecção da face, extração do embedding, busca por similaridade e decisão de acesso. Com isso, a arquitetura se torna mais modular, eficiente e adequada ao uso conjunto de processamento local e serviços em nuvem.
 \subsection{Fluxo Orientado a Eventos:} Como o upload de uma imagem na nuvem dispara de forma assíncrona o processamento de reconhecimento facial e a gravação no banco de dados vetorial.
 
 \subsection{Modelagem de Dados:} Estrutura do registro salvo no banco (Nome, Timestamp e Vetor de Características).
