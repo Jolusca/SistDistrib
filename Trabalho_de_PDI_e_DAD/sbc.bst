@@ -1,4 +1,4 @@
-@ -0,0 +1,1103 @@
+
 %% copy of "apalike" for SBC (no comma before year in citation label)
 
 % BibTeX `apalike' bibliography style (24-Jan-88 version)

@@ -58,3 +58,5 @@ venv/
 
 # Arquivos de ambiente (variáveis de ambiente, chaves de API, etc.)
 .env
+
+.vscode
