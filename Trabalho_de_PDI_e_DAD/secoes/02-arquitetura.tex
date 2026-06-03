@@ -1,8 +1,15 @@
 \section{Arquitetura Distribuída e Protocolos de Comunicação}
-\label{sec:arquitetura_distribuida}
 
-O sistema proposto foi modelado sob um paradigma cliente-servidor fracamente acoplado, dividindo a carga de trabalho entre processamento de borda (\textit{edge computing}) e armazenamento especializado em nuvem. A separação de responsabilidades visa otimizar o uso de recursos locais e garantir a escalabilidade horizontal do banco de dados de vetores.
+O sistema proposto foi modelado sob o paradigma cliente-servidor fracamente acoplado, dividindo a carga de trabalho entre o processamento de borda (\textit{edge computing}) e o armazenamento especializado em nuvem. Essa separação de responsabilidades buscou otimizar o uso dos recursos computacionais locais e garantir a escalabilidade horizontal do banco de dados de vetores. A disposição estrutural de cada componente e a interconexão dos blocos estão apresentadas na Figura~\ref{fig:fluxograma_arquitetura}.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[height=0.5\textheight, keepaspectratio]{images/flowchart do projeto.png} 
+    \caption{Fluxo de dados e divisão de componentes entre as camadas de Cliente e Servidor em nuvem.}
+    \label{fig:fluxograma_arquitetura}
+\end{figure}
+
+Conforme observado no diagrama, o fluxo operacional iniciou no ambiente local com a captura de vídeo pelo dispositivo de entrada e o processamento da imagem via OpenCV para a detecção e o alinhamento facial. Na sequência, o modelo ArcFace extraiu os vetores descritores de 512 dimensões. Ao atingir a camada em nuvem, o microserviço AWS Lambda realizou a validação e o registro temporal (\textit{timestamp}) da requisição, acionando o cluster do Qdrant Cloud para a execução da busca vetorial. Após a localização do vetor mais próximo, o histórico de acesso foi persistido no banco de dados relacional Amazon RDS, o que atualizou o status de liberação na interface de controle de acesso.
 \subsection{Topologia da Rede e Desacoplamento de Nós}
 A topologia do sistema é composta por dois nós principais que operam de forma geograficamente distribuída:
 
@@ -22,5 +29,13 @@ No modelo de testes aplicado ao sistema distribuído, o conjunto de dados foi se
     \item \textbf{Fase de Ingestão:} O subconjunto composto pelas imagens em posição estritamente frontal e com expressão neutra permaneceu no nó cliente para o processo de extração local e alimentação síncrona inicial da coleção hospedada no \textit{Qdrant Cloud}.
     \item \textbf{Fase de Consulta:} As imagens que apresentavam variações de pose, rotação e expressões do mesmo indivíduo foram isoladas em um diretório de testes secundário no nó local. Esses arquivos foram utilizados para alimentar o laço contínuo de requisições externas, validando a capacidade do método remoto \texttt{query\_points} em correlacionar vetores com distorções geométricas ao vetor original armazenado na nuvem.
 \end{itemize}
+
+\subsection{Mecanismo de Consulta por similaridade vetorial}
+
+A etapa de consulta biométrica e identificação no banco de dados vetorial foi realizada por meio de uma chamada de procedimento remoto utilizando o método unificado \texttt{query\_points} da API do \textit{Qdrant}. Este método consolida a pesquisa espacial em uma única requisição estruturada, otimizando o tempo de resposta do cluster em nuvem.
+
+O vetor de características composto por 512 dimensões, gerado na borda pelo modelo \textit{ArcFace}, é encaminhado como o argumento principal da consulta no parâmetro \texttt{query}. Configura-se o parâmetro \texttt{limit} com valor unitário para estabelecer uma busca do tipo $top-1$, o que instrui o servidor a retornar apenas o vetor que apresenta a maior proximidade espacial. A requisição também define o parâmetro \texttt{with\_payload} como verdadeiro, garantindo que o servidor anexe os metadados associados ao registro localizado.
+
+No servidor, o \textit{Qdrant} processa a busca calculando a similaridade de cosseno entre o vetor de entrada e os elementos indexados na coleção. O retorno gerado pelo método é estruturado em uma lista sob o atributo \texttt{points}. O sistema analisa o primeiro elemento dessa lista para extrair o identificador único do ponto, os metadados da imagem original e o escore de similaridade correspondente, o qual serve como métrica de confiança para a validação da identidade.
 
 \subsection{Implementação com a leitura de Rostos em Tempo Real}

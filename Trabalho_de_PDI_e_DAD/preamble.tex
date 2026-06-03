@@ -16,17 +16,15 @@
 \usepackage{graphicx}
 \usepackage{float}         % Ajuda a fixar imagens com [H]
 \graphicspath{ {./images/} }
-
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 
-% Definição dos estilos dos blocos do fluxograma
-\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!20]
-\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!20]
-\tikzstyle{process} = [rectangle, minimum width=3.5cm, minimum height=1cm, text centered, draw=black, fill=orange!20]
-\tikzstyle{decision} = [diamond, aspect=2, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!20]
-\tikzstyle{arrow} = [thick,->,>=stealth]
-
+% Definição de estilos para o fluxograma
+\tikzset{
+    fluxo_box/.style={draw, rectangle, rounded corners=3pt, minimum width=2.4cm, minimum height=1.1cm, align=center, fill=white, font=\small},
+    fluxo_decision/.style={draw, diamond, aspect=2, minimum width=2.4cm, minimum height=1.1cm, align=center, fill=white, font=\small, inner sep=1pt},
+    fluxo_group/.style={draw, dashed, gray, thick, rounded corners=6pt, inner sep=0.5cm, fill=gray!5}
+}
 % --- Títulos (Configuração correta para Sumário e Numeração) ---
 \usepackage{titlesec}
 \titleformat{\section}{\bfseries\Large}{\thesection}{1em}{}
