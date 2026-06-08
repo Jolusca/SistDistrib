@@ -23,6 +23,11 @@ Nessa expressão, \(N\) representa o número de amostras, \(y_i\) é a classe co
 
 No funcionamento do sistema, após o pré-processamento realizado pelo script de captura da ROI descrito anteriormente, a região facial é processada pelo DeepFace utilizando o ArcFace como modelo de representação. O resultado dessa etapa é um embedding facial, isto é, um vetor numérico que resume as características relevantes da face capturada. Em vez de comparar imagens diretamente, o sistema compara esse vetor com os vetores previamente cadastrados no banco.
 
+
+INCLUIR UM EXEMPLO DE EMBEDDING FACIAL PARA ILUSTRAR A TRANSFORMAÇÃO DA IMAGEM EM VETOR NUMÉRICO, MOSTRANDO COMO AS CARACTERÍSTICAS DO ROSTO SÃO REPRESENTADAS DE FORMA COMPACTA E DISCRIMINATIVA.
+
+
+
 % A decisão de liberar ou recusar a entrada é tomada a partir da similaridade entre o embedding da face capturada e os embeddings cadastrados. Caso a distância entre os vetores seja pequena, ou a similaridade seja maior que um determinado limiar, o sistema entende que a pessoa foi reconhecida. 
 
 % Dessa forma, o DeepFace atua como camada de integração para o uso de modelos de reconhecimento facial, enquanto o ArcFace é responsável pela geração de embeddings discriminativos. Essa combinação permite que o sistema seja organizado em etapas bem definidas: captura da imagem, detecção da face, extração do embedding, busca por similaridade e decisão de acesso. Com isso, a arquitetura se torna mais modular, eficiente e adequada ao uso conjunto de processamento local e serviços em nuvem.
