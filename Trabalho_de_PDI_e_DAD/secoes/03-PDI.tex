@@ -10,22 +10,36 @@ O DeepFace é utilizado como uma biblioteca de apoio para facilitar a integraç�
 
 Nesse projeto, o ArcFace é utilizado por meio do DeepFace para converter cada face capturada em um vetor numérico, chamado de embedding facial. Esse vetor representa características relevantes do rosto e permite que a comparação entre pessoas seja feita de forma matemática, em vez de comparar diretamente as imagens. A principal contribuição do ArcFace está na função de perda chamada \textit{Additive Angular Margin Loss}, que melhora a separação entre diferentes identidades no espaço vetorial. Enquanto modelos tradicionais baseados em softmax aprendem principalmente a classificar imagens em categorias, o ArcFace busca gerar representações mais discriminativas, aproximando embeddings de uma mesma pessoa e afastando embeddings de pessoas diferentes por meio de uma margem angular aditiva. Dessa forma, a comparação facial passa a considerar a separação entre os vetores em um espaço angular, tornando o reconhecimento mais adequado para cenários com variações de iluminação, pose e expressão facial. \cite{deng2019arcface}
 
-A formulação do ArcFace parte da normalização dos pesos da última camada e dos vetores de características, de modo que a comparação passe a depender principalmente do ângulo entre os vetores. A função de perda pode ser representada, de forma resumida, por:
+A formulação do ArcFace parte da normalização dos pesos da última camada e dos vetores de características, de modo que a comparação passe a depender principalmente do ângulo entre os vetores. A função de perda pode ser representada, de forma resumida, pela equação~\ref{eq:FuncaoPerda}:
 
-\[
-L = -\frac{1}{N}\sum_{i=1}^{N}
-\log
-\frac{e^{s\cos(\theta_{y_i}+m)}}
-{e^{s\cos(\theta_{y_i}+m)} + \sum_{j=1, j \neq y_i}^{n} e^{s\cos(\theta_j)}}
-\]
+
+\begin{equation}
+\label{eq:FuncaoPerda}
+L = -\frac{1}{N}\sum_{i=1}^{N} \log \frac{e^{s\cos(\theta_{y_i}+m)}}{e^{s\cos(\theta_{y_i}+m)} + \sum_{j=1, j \neq y_i}^{n} e^{s\cos(\theta_j)}}
+\end{equation}
 
 Nessa expressão, \(N\) representa o número de amostras, \(y_i\) é a classe correta da amostra \(i\), \(\theta_{y_i}\) é o ângulo entre o vetor de características e o peso da classe correta, \(m\) é a margem angular adicionada e \(s\) é um fator de escala. A adição da margem \(m\) força o modelo a exigir uma separação angular maior para classificar corretamente uma face, tornando os embeddings mais discriminativos \cite{deng2019arcface}.
 
-No funcionamento do sistema, após o pré-processamento realizado pelo script de captura da ROI descrito anteriormente, a região facial é processada pelo DeepFace utilizando o ArcFace como modelo de representação. O resultado dessa etapa é um embedding facial, isto é, um vetor numérico que resume as características relevantes da face capturada. Em vez de comparar imagens diretamente, o sistema compara esse vetor com os vetores previamente cadastrados no banco.
+No funcionamento do sistema, após o pré-processamento realizado pelo script de captura da ROI descrito anteriormente, a região facial é processada pelo DeepFace utilizando o ArcFace como modelo de representação. O resultado dessa etapa é um embedding facial, isto é, um vetor numérico que resume as características relevantes da face capturada, conforme exemplificado na Tabela~\ref{tab:exemplo_embedding}. Em vez de comparar imagens diretamente, o sistema compara esse vetor com os vetores previamente cadastrados no banco, o que torna o processo de reconhecimento mais eficiente e robusto, especialmente em condições de variação de pose, iluminação e expressão facial.
 
+\begin{table}[htbp]
+    \centering
+    \caption{Exemplo da estrutura e valores do vetor de embedding gerado pelo modelo ArcFace.}
+    \label{tab:exemplo_embedding}
+    \vspace{6pt}
+    \begin{tabular}{cc}
+        \hline
+        \textbf{Índice} & \textbf{Valor do Embedding} \\ \hline
+        0  & -0.226871639 \\
+        1  &  0.036645882 \\
+        2  &  0.053239971 \\
+        3  & -0.223227322 \\
+        \vdots & \vdots \\
+        510 &  0.07878179 \\
+        511 & 0.078781798 \\ \hline
 
-INCLUIR UM EXEMPLO DE EMBEDDING FACIAL PARA ILUSTRAR A TRANSFORMAÇÃO DA IMAGEM EM VETOR NUMÉRICO, MOSTRANDO COMO AS CARACTERÍSTICAS DO ROSTO SÃO REPRESENTADAS DE FORMA COMPACTA E DISCRIMINATIVA.
-
+    \end{tabular}
+\end{table}
 
 
 % A decisão de liberar ou recusar a entrada é tomada a partir da similaridade entre o embedding da face capturada e os embeddings cadastrados. Caso a distância entre os vetores seja pequena, ou a similaridade seja maior que um determinado limiar, o sistema entende que a pessoa foi reconhecida. 
