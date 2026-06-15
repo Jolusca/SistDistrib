@@ -2,12 +2,22 @@
 
 O sistema proposto foi modelado sob o paradigma cliente-servidor fracamente acoplado, dividindo a carga de trabalho entre o processamento de borda (\textit{edge computing}) e o armazenamento especializado em nuvem. Essa separação de responsabilidades buscou otimizar o uso dos recursos computacionais locais e garantir a escalabilidade horizontal do banco de dados de vetores. A disposição estrutural de cada componente e a interconexão dos blocos estão apresentadas na Figura~\ref{fig:fluxograma_arquitetura}.
 
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[height=0.5\textheight, keepaspectratio]{images/flowchart do projeto.png} 
+%     \caption{Fluxo de dados e divisão de componentes entre as camadas de Cliente e Servidor em nuvem.}
+%     \label{fig:fluxograma_arquitetura}
+% \end{figure}
+
 \begin{figure}[htbp]
-    \centering   
+    \centering
     \caption{Fluxo de dados e divisão de componentes entre as camadas de Cliente e Servidor em nuvem.}
+    \vspace{-20pt}
     \includegraphics[height=0.5\textheight, keepaspectratio]{images/flowchart do projeto.png} 
 
     \label{fig:fluxograma_arquitetura}
+    \vspace{-4pt} % Pequeno espaçamento opcional entre a legenda e a fonte
+    {\footnotesize Fonte: Elaborada pelo autor.}
 \end{figure}
 
 Conforme observado no diagrama, o fluxo operacional iniciou no ambiente local com a captura de vídeo pelo dispositivo de entrada e o processamento da imagem via OpenCV para a detecção e o alinhamento facial. Na sequência, o modelo ArcFace extraiu os vetores descritores de 512 dimensões. Ao atingir a camada em nuvem, o microserviço AWS Lambda realizou a validação e o registro temporal (\textit{timestamp}) da requisição, acionando o cluster do Qdrant Cloud para a execução da busca vetorial. Após a localização do vetor mais próximo, o histórico de acesso foi persistido no banco de dados relacional Amazon RDS, o que atualizou o status de liberação na interface de controle de acesso.
