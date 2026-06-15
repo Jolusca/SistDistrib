@@ -50,3 +50,10 @@ O vetor de características composto por 512 dimensões, gerado na borda pelo mo
 No servidor, o \textit{Qdrant} processa a busca calculando a similaridade de cosseno entre o vetor de entrada e os elementos indexados na coleção. O retorno gerado pelo método é estruturado em uma lista sob o atributo \texttt{points}. O sistema analisa o primeiro elemento dessa lista para extrair o identificador único do ponto, os metadados da imagem original e o escore de similaridade correspondente, o qual serve como métrica de confiança para a validação da identidade.
 
 \subsection{Implementação com a leitura de Rostos em Tempo Real}
+
+\subsection{AWS} 
+que parte da AWS vai ser usada, quais serviços, como eles se comunicam, etc.
+
+
+\subsection{Qdrant Cloud}
+O Qdrant Cloud é um serviço gerenciado de banco de dados vetorial que oferece uma infraestrutura otimizada para o armazenamento e a consulta de dados de alta dimensionalidade, como os vetores de características faciais gerados pelo modelo ArcFace. Ele é projetado para lidar com grandes volumes de dados e fornecer respostas rápidas para consultas de similaridade, o que é essencial para aplicações de reconhecimento facial em tempo real.
