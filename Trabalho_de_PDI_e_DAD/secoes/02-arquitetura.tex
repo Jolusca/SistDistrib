@@ -1,49 +1,46 @@
 \section{Arquitetura Distribuída e Protocolos de Comunicação}
 
-O sistema proposto foi modelado sob o paradigma cliente-servidor fracamente acoplado, dividindo a carga de trabalho entre o processamento de borda (\textit{edge computing}) e o armazenamento especializado em nuvem. Essa separação de responsabilidades buscou otimizar o uso dos recursos computacionais locais e garantir a escalabilidade horizontal do banco de dados de vetores. A disposição estrutural de cada componente e a interconexão dos blocos estão apresentadas na Figura~\ref{fig:fluxograma_arquitetura}.
+O sistema proposto foi modelado sob o paradigma cliente-servidor fracamente acoplado, dividindo a carga de trabalho entre o processamento de borda (\textit{edge computing}) e o armazenamento especializado em nuvem. Essa separação de responsabilidades buscou otimizar o uso dos recursos computacionais locais e garantir a escalabilidade horizontal do banco de dados de vetores. A disposição estrutural de cada componente e a interconexão dos blocos estão apresentadas na Figura~\ref{fig:fluxograma_arquiteturaGeral}.
 
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[height=0.5\textheight, keepaspectratio]{images/flowchart do projeto.png} 
-%     \caption{Fluxo de dados e divisão de componentes entre as camadas de Cliente e Servidor em nuvem.}
-%     \label{fig:fluxograma_arquitetura}
-% \end{figure}
 
 \begin{figure}[htbp]
     \centering
-    \caption{Fluxo de dados e divisão de componentes entre as camadas de Cliente e Servidor em nuvem.}
-    \vspace{-20pt}
-    \includegraphics[height=0.5\textheight, keepaspectratio]{images/flowchart do projeto.png} 
-
-    \label{fig:fluxograma_arquitetura}
-    \vspace{-4pt} % Pequeno espaçamento opcional entre a legenda e a fonte
-    {\footnotesize Fonte: Elaborada pelo autor.}
+    \caption{Fluxo de dados e divisão de componentes entre as camadas de Borda e Serviços em nuvem.}
+    \vspace{-10pt}
+    \includegraphics[height=0.6\textheight, keepaspectratio]{images/flowchartGeral.png}
+    \par\vspace{6pt} % Pequeno espaçamento opcional entre a imagem e a legenda
+    \label{fig:fluxograma_arquiteturaGeral}
+    \footnotesize Fonte: Elaborada pelo autor.
 \end{figure}
 
-Conforme observado no diagrama, o fluxo operacional iniciou no ambiente local com a captura de vídeo pelo dispositivo de entrada e o processamento da imagem via OpenCV para a detecção e o alinhamento facial. Na sequência, o modelo ArcFace extraiu os vetores descritores de 512 dimensões. Ao atingir a camada em nuvem, o microserviço AWS Lambda realizou a validação e o registro temporal (\textit{timestamp}) da requisição, acionando o cluster do Qdrant Cloud para a execução da busca vetorial. Após a localização do vetor mais próximo, o histórico de acesso foi persistido no banco de dados relacional Amazon RDS, o que atualizou o status de liberação na interface de controle de acesso.
+Conforme observado no diagrama, o fluxo operacional iniciou no ambiente local com a captura de vídeo pelo dispositivo de entrada e o processamento da imagem para a detecção e o alinhamento facial. Na sequência, foi utilizado um modelo para extração de vetores de características com base no rosto alinhado e realizado o envio para a camada em nuvem. 
+
+Ao atingir a camada em nuvem, é realizado o processamento e roteamento das requisições para o serviço de busca vetorial, que retorna o resultado da consulta. O sistema então processa a resposta e, com base no resultado, toma a decisão de liberar ou recusar o acesso, realizando uma ultima validação e atualizando o histórico de acesso no banco de dados relacional.
+
+
 \subsection{Topologia da Rede e Desacoplamento de Nós}
 A topologia do sistema é composta por dois nós principais que operam de forma geograficamente distribuída:
 
 \begin{itemize}
-    \item \textbf{Nó Cliente (Local):} Executa em ambiente computacional próprio, encarregado das tarefas de computação intensiva na origem, que compreendem a leitura do sistema de arquivos local, a decodificação de matrizes de imagens e a geração dos vetores de características de 512 dimensões.
-    \item \textbf{Nó Servidor (Nuvem):} Consiste em um cluster gerenciado do \textit{Qdrant Cloud}, hospedado na infraestrutura da \textit{Amazon Web Services} (AWS) na região da América do Sul (\textit{sa-east-1}). Este nó é responsável exclusivo pela indexação espacial, persistência e processamento de consultas de similaridade de alta dimensionalidade.
+    \item \textbf{Camada de Borda:} Executada em ambiente computacional local, realizando a captura de vídeo, o pré-processamento de imagens, a extração de características faciais e a comunicação com os serviços em nuvem. Esta camada é responsável por realizar as operações de visão computacional e gerar os vetores de características que serão enviados para o servidor.
+    \item \textbf{Camada de Serviços em Nuvem:} Consiste em um cluster gerenciado do \textit{Qdrant Cloud}, hospedado na infraestrutura da \textit{Amazon Web Services} (AWS) na região da América do Sul (\textit{sa-east-1}). Este nó é responsável pela indexação espacial, persistência e processamento de consultas de similaridade vetorial.
 \end{itemize}
 
 A comunicação entre as extremidades ocorre por meio de requisições HTTP utilizando uma interface de programação de aplicações baseada na arquitetura REST (\textit{RESTful API}), implementada sobre as bibliotecas de transporte \texttt{httpx} e \texttt{httpcore}.
 
-\subsection{Base de Dados de Validação e Protocolo de Experimentos}
+\subsection{Validação Experimental da Infraestrutura Distribuída}
 A validação experimental da infraestrutura distribuída foi conduzida utilizando a base de dados de faces da FEI (\textit{FEI Face Database})~\cite{thomaz2006fei}. Este repositório biométrico é composto por 2.800 imagens coloridas com resolução original de $640 \times 480$ pixels, obtidas a partir de um grupo de 200 indivíduos, apresentando uma divisão equitativa de 100 sujeitos do sexo masculino e 100 do sexo feminino, com idades variando entre 19 e 40 anos. Cada participante possui 14 registros fotográficos capturados contra um fundo branco homogêneo, abrangendo diferentes expressões faciais e rotações de perfil de até cerca de 180 graus, com variações de escala estimadas em 10\%.
 
 No modelo de testes aplicado ao sistema distribuído, o conjunto de dados foi segmentado e alocado logicamente para simular um cenário real de identificação remota:
 
 \begin{itemize}
     \item \textbf{Fase de Ingestão:} O subconjunto composto pelas imagens em posição estritamente frontal e com expressão neutra permaneceu no nó cliente para o processo de extração local e alimentação síncrona inicial da coleção hospedada no \textit{Qdrant Cloud}.
-    \item \textbf{Fase de Consulta:} As imagens que apresentavam variações de pose, rotação e expressões do mesmo indivíduo foram isoladas em um diretório de testes secundário no nó local. Esses arquivos foram utilizados para alimentar o laço contínuo de requisições externas, validando a capacidade do método remoto \texttt{query\_points} em correlacionar vetores com distorções geométricas ao vetor original armazenado na nuvem.
+    \item \textbf{Fase de Consulta:} As imagens que apresentavam variações de pose, rotação e expressões do mesmo indivíduo foram isoladas em um diretório de testes secundário no nó local. Esses arquivos foram utilizados para alimentar o laço contínuo de requisições externas, validando a capacidade da operação de busca vetorial em correlacionar os vetores de características originais com a versão enviada durante os testes.
 \end{itemize}
 
-\subsection{Mecanismo de Consulta por similaridade vetorial}
+\subsubsection{Mecanismo de Consulta por similaridade vetorial}
 
-A etapa de consulta biométrica e identificação no banco de dados vetorial foi realizada por meio de uma chamada de procedimento remoto utilizando o método unificado \texttt{query\_points} da API do \textit{Qdrant}. Este método consolida a pesquisa espacial em uma única requisição estruturada, otimizando o tempo de resposta do cluster em nuvem.
+A etapa de consulta biométrica e identificação no banco de dados vetorial foi realizada por meio de uma chamada de procedimento remoto utilizando o método unificado \texttt{query\_points} da API do \textit{Qdrant}. Este método consolida a pesquisa espacial em uma única requisição estruturada, otimizando o tempo de resposta do cluster em nuvem. \cite{qdrant2024query}.
 
 O vetor de características composto por 512 dimensões, gerado na borda pelo modelo \textit{ArcFace}, é encaminhado como o argumento principal da consulta no parâmetro \texttt{query}. Configura-se o parâmetro \texttt{limit} com valor unitário para estabelecer uma busca do tipo $top-1$, o que instrui o servidor a retornar apenas o vetor que apresenta a maior proximidade espacial. A requisição também define o parâmetro \texttt{with\_payload} como verdadeiro, garantindo que o servidor anexe os metadados associados ao registro localizado.
 
@@ -51,9 +48,29 @@ No servidor, o \textit{Qdrant} processa a busca calculando a similaridade de cos
 
 \subsection{Implementação com a leitura de Rostos em Tempo Real}
 
-\subsection{AWS} 
-que parte da AWS vai ser usada, quais serviços, como eles se comunicam, etc.
+A Figura~\ref{fig:diagrama_nuvem} apresenta um diagrama detalhado da arquitetura da camada de serviços em nuvem, destacando os componentes e fluxos de dados envolvidos nela. O diagrama mostra o passo a passo do processamento das requis
+
+\begin{figure}[htbp]
+    \centering
+    \caption{Diagrama detalhado da Camada de Serviços em Nuvem.}
+    \includegraphics[width=0.8\textwidth]{images/flowchartNuvem.png}
+    \par\vspace{6pt} % Pequeno espaçamento opcional entre a imagem e a legenda
+    \label{fig:diagrama_nuvem}
+    \footnotesize Fonte: Elaborada pelo autor.
+\end{figure}
+
+É importante destacar a escolha de separar o processamento em Nuvem em dois serviços principais, a Amazon AWS e o Qdrant Cloud, cada um com responsabilidades específicas.
+
+A AWS é utilizada para hospedar a infraestrutura de backend, gerenciar a autenticação, orquestrar as requisições e garantir a segurança dos dados, enquanto o Qdrant Cloud é especializado no armazenamento e na consulta eficiente dos vetores de características faciais. Essa divisão permite que cada serviço seja otimizado para suas funções específicas, garantindo uma operação mais fluida e responsiva do sistema como um todo.
+
+\subsubsection{AWS} 
+Para a implementação da camada de serviços em nuvem, o processo começa com o direcionamento das requisições através do Amazon API Gateway, que atua como um ponto de entrada seguro e escalável para as chamadas externas. O API Gateway é configurado para rotear as requisições para uma função Lambda, que é responsável por validar vetor recebido e realizar a consulta ao banco de dados do Qdrant Cloud.
+Posteriormente, ao receber a resposta do Qdrant, a função Lambda processa os resultados e encaminha a resposta final de volta ao cliente, indicando se o acesso foi liberado ou recusado com base na similaridade dos vetores. 
+
+A escolha da AWS para esta camada se deve à sua robustez, escalabilidade e ampla gama de serviços gerenciados que facilitam a implementação de soluções em nuvem, além de garantir a segurança e a confiabilidade necessárias para o processamento de dados sensíveis como os vetores de características faciais. \cite{aws2026docs}
 
 
-\subsection{Qdrant Cloud}
-O Qdrant Cloud é um serviço gerenciado de banco de dados vetorial que oferece uma infraestrutura otimizada para o armazenamento e a consulta de dados de alta dimensionalidade, como os vetores de características faciais gerados pelo modelo ArcFace. Ele é projetado para lidar com grandes volumes de dados e fornecer respostas rápidas para consultas de similaridade, o que é essencial para aplicações de reconhecimento facial em tempo real.
+\subsubsection{Qdrant Cloud}
+Já no que se refere ao Qdrant Cloud, ele é utilizado como o serviço de banco de dados especializado para armazenar os vetores de características faciais e realizar as consultas de similaridade. O Qdrant é otimizado para lidar com grandes volumes de dados vetoriais e oferece uma API eficiente para indexação e busca, o que o torna ideal para este tipo de aplicação. \cite{qdrant2024query}
+
+Para isso, a Função Lambda da AWS realiza uma consulta do tipo query\_points, enviando o vetor de características recebido do cliente e solicitando o retorno do ponto mais próximo na coleção do Qdrant. O serviço processa a consulta utilizando algoritmos de busca vetorial e retorna os resultados, que são então interpretados pela função Lambda para determinar a resposta final ao cliente. Essa integração entre a AWS e o Qdrant Cloud permite que o sistema aproveite as vantagens de ambos os serviços, garantindo uma operação eficiente e escalável para o reconhecimento facial distribuído.
