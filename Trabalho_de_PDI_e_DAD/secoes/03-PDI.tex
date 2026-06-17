@@ -4,7 +4,12 @@ Nessa sessão, detalhamos o pipeline de processamento de imagens implementado na
 
 \subsection{Pipeline de Visão Computacional:} Descrição das Etapas locais de tratamento da imagem 
 
-\subsection{Isolamento da Região de Interesse (ROI):} Uso de técnicas de detecção facial com a yolo para extrair a região do rosto, garantindo que o processamento subsequente seja focado apenas na área relevante.
+\subsection{Isolamento da Região de Interesse (ROI):} 
+O presente trabalho utilizou a arquitetura YOLOv8n para a detecção de rostos, aproveitando o \textit{FEI face database}, composto por 2800 imagens de 200 indivíduos com variações de iluminação e pose. O modelo foi treinado com pesos pré-treinados, \textit{batch size} de 4 e resolução de 320 pixels, mantendo as configurações originais das imagens sem \textit{data augmentation} para preservar a fidelidade dos dados. O processo ocorreu ao longo de 20 épocas, utilizando \textit{Early Stopping} para otimizar o aprendizado e prevenir \textit{overfitting}.
+
+O pré-processamento consistiu na normalização das imagens originais de 640x480 pixels, com a detecção de faces via Haar Cascade do OpenCV para a geração de rótulos em coordenadas relativas. Amostras sem detecção positiva foram descartadas para assegurar a integridade do conjunto, que foi posteriormente dividido em 80% para treino e 20% para validação.
+
+Os resultados obtidos demonstram a eficácia da arquitetura, embora a precisão tenha sido impactada pelo uso do classificador Haar Cascade no pré-processamento, que gerou rótulos com menor grau de ajuste espacial. Apesar dessa limitação na qualidade das \textit{labels} originais, o modelo alcançou convergência estável na época 10, apresentando um \textit{mAP@50} de 0,945 e \textit{mAP@50-95} de 0,831. Com um tempo de inferência de 11,3 ms por imagem, o sistema demonstra robustez e viabilidade para aplicações em tempo real, indicando que o desempenho poderia ser ainda mais otimizado com métodos de detecção mais robustos para o refinamento das coordenadas dos rostos durante a etapa de rotulagem.
 
 
 \subsection{Extração e Vetorização de Características Faciais}
@@ -41,45 +46,3 @@ O resultado desse processo é um vetor de \textit{embedding facial} de 512 dimen
 
     \end{tabular}
 \end{table}
-
-% \subsection{Reconhecimento Facial com DeepFace e ArcFace:}
-
-% O DeepFace é utilizado como uma biblioteca de apoio para facilitar a integração de modelos de reconhecimento facial baseados em aprendizado profundo. Ele evita a necessidade de implementar manualmente toda a estrutura de reconhecimento facial, oferecendo recursos prontos para etapas como detecção, alinhamento, representação e verificação de faces. \cite{du2022elements}.   Além disso, por funcionar como uma estrutura híbrida, permite utilizar diferentes modelos já conhecidos na área, como VGG-Face, FaceNet, OpenFace, DeepID, Dlib e, especificamente nesse caso, o ArcFace.  \cite{deepfacegithub}.
-
-% Nesse projeto, o ArcFace é utilizado por meio do DeepFace para converter cada face capturada em um vetor numérico, chamado de embedding facial. Esse vetor representa características relevantes do rosto e permite que a comparação entre pessoas seja feita de forma matemática, em vez de comparar diretamente as imagens. A principal contribuição do ArcFace está na função de perda chamada \textit{Additive Angular Margin Loss}, que melhora a separação entre diferentes identidades no espaço vetorial. Enquanto modelos tradicionais baseados em softmax aprendem principalmente a classificar imagens em categorias, o ArcFace busca gerar representações mais discriminativas, aproximando embeddings de uma mesma pessoa e afastando embeddings de pessoas diferentes por meio de uma margem angular aditiva. Dessa forma, a comparação facial passa a considerar a separação entre os vetores em um espaço angular, tornando o reconhecimento mais adequado para cenários com variações de iluminação, pose e expressão facial. \cite{deng2019arcface}
-
-% A formulação do ArcFace parte da normalização dos pesos da última camada e dos vetores de características, de modo que a comparação passe a depender principalmente do ângulo entre os vetores. A função de perda pode ser representada, de forma resumida, pela equação~\ref{eq:FuncaoPerda}:
-
-
-% \begin{equation}
-% \label{eq:FuncaoPerda}
-% L = -\frac{1}{N}\sum_{i=1}^{N} \log \frac{e^{s\cos(\theta_{y_i}+m)}}{e^{s\cos(\theta_{y_i}+m)} + \sum_{j=1, j \neq y_i}^{n} e^{s\cos(\theta_j)}}
-% \end{equation}
-
-% Nessa expressão, \(N\) representa o número de amostras, \(y_i\) é a classe correta da amostra \(i\), \(\theta_{y_i}\) é o ângulo entre o vetor de características e o peso da classe correta, \(m\) é a margem angular adicionada e \(s\) é um fator de escala. A adição da margem \(m\) força o modelo a exigir uma separação angular maior para classificar corretamente uma face, tornando os embeddings mais discriminativos \cite{deng2019arcface}.
-
-% No funcionamento do sistema, após o pré-processamento realizado pelo script de captura da ROI descrito anteriormente, a região facial é processada pelo DeepFace utilizando o ArcFace como modelo de representação. O resultado dessa etapa é um embedding facial, isto é, um vetor numérico que resume as características relevantes da face capturada, conforme exemplificado na Tabela~\ref{tab:exemplo_embedding}. Em vez de comparar imagens diretamente, o sistema compara esse vetor com os vetores previamente cadastrados no banco, o que torna o processo de reconhecimento mais eficiente e robusto, especialmente em condições de variação de pose, iluminação e expressão facial.
-
-% \begin{table}[htbp]
-%     \centering
-%     \caption{Exemplo da estrutura e valores do vetor de embedding gerado pelo modelo ArcFace.}
-%     \label{tab:exemplo_embedding}
-%     \vspace{6pt}
-%     \begin{tabular}{cc}
-%         \hline
-%         \textbf{Índice} & \textbf{Valor do Embedding} \\ \hline
-%         0  & -0.226871639 \\
-%         1  &  0.036645882 \\
-%         2  &  0.053239971 \\
-%         3  & -0.223227322 \\
-%         \vdots & \vdots \\
-%         510 &  0.07878179 \\
-%         511 & 0.078781798 \\ \hline
-
-%     \end{tabular}
-% \end{table}
-
-
-% A decisão de liberar ou recusar a entrada é tomada a partir da similaridade entre o embedding da face capturada e os embeddings cadastrados. Caso a distância entre os vetores seja pequena, ou a similaridade seja maior que um determinado limiar, o sistema entende que a pessoa foi reconhecida. 
-
-% Dessa forma, o DeepFace atua como camada de integração para o uso de modelos de reconhecimento facial, enquanto o ArcFace é responsável pela geração de embeddings discriminativos. Essa combinação permite que o sistema seja organizado em etapas bem definidas: captura da imagem, detecção da face, extração do embedding, busca por similaridade e decisão de acesso. Com isso, a arquitetura se torna mais modular, eficiente e adequada ao uso conjunto de processamento local e serviços em nuvem.
