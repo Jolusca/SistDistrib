@@ -4,12 +4,19 @@ Nessa sessão, detalhamos o pipeline de processamento de imagens implementado na
 
 \subsection{Pipeline de Visão Computacional:} Descrição das Etapas locais de tratamento da imagem 
 
-\subsection{Isolamento da Região de Interesse (ROI):} 
-O presente trabalho utilizou a arquitetura YOLOv8n para a detecção de rostos, aproveitando o \textit{FEI face database}, composto por 2800 imagens de 200 indivíduos com variações de iluminação e pose. O modelo foi treinado com pesos pré-treinados, \textit{batch size} de 4 e resolução de 320 pixels, mantendo as configurações originais das imagens sem \textit{data augmentation} para preservar a fidelidade dos dados. O processo ocorreu ao longo de 20 épocas, utilizando \textit{Early Stopping} para otimizar o aprendizado e prevenir \textit{overfitting}.
 
-O pré-processamento consistiu na normalização das imagens originais de 640x480 pixels, com a detecção de faces via Haar Cascade do OpenCV para a geração de rótulos em coordenadas relativas. Amostras sem detecção positiva foram descartadas para assegurar a integridade do conjunto, que foi posteriormente dividido em 80% para treino e 20% para validação.
+\subsection{Isolamento da Região de Interesse (ROI):}
 
-Os resultados obtidos demonstram a eficácia da arquitetura, embora a precisão tenha sido impactada pelo uso do classificador Haar Cascade no pré-processamento, que gerou rótulos com menor grau de ajuste espacial. Apesar dessa limitação na qualidade das \textit{labels} originais, o modelo alcançou convergência estável na época 10, apresentando um \textit{mAP@50} de 0,945 e \textit{mAP@50-95} de 0,831. Com um tempo de inferência de 11,3 ms por imagem, o sistema demonstra robustez e viabilidade para aplicações em tempo real, indicando que o desempenho poderia ser ainda mais otimizado com métodos de detecção mais robustos para o refinamento das coordenadas dos rostos durante a etapa de rotulagem.
+\subsubsection{Detecção de Faces com YOLOv8}
+A detecção de rostos foi realizada utilizando a arquitetura YOLO (You Only Look Once), uma rede neural convolucional de estágio único que processa a imagem em uma única passagem direta \cite{redmon2016you}. A implementação baseou-se no framework Ultralytics YOLOv8 \cite{yolov8_ultralytics}, que permite a previsão simultânea de caixas delimitadoras e classes, garantindo a baixa latência necessária para aplicações em tempo real.
+
+O conjunto de dados, composto pelas 2.800 imagens do \textit{FEI face database}, passou por um processo de normalização e anotação automatizada. O processo utilizou um modelo pré-treinado de detecção facial baseado em Caffe, pré-treinado com arquitetura ResNet-10 SSD, para delimitar as áreas de interesse em cada imagem, garantindo que apenas exemplos com detecções positivas compusessem a base final. O dataset foi, por fim, particionado para o treinamento e a validação da rede, seguindo a divisão de 80\% e 20\%, respectivamente.
+
+
+\subsubsection{Resultados do Treinamento e Validação}
+O modelo YOLOv8n foi treinado com \textit{batch size} 4, resolução de 416 pixels e ausência de \textit{data augmentation}. O processo estendeu-se por 87 épocas, com duração total de 4,6 horas e monitoramento contínuo das funções de perda (\textit{box loss}, \textit{cls loss} e \textit{dfl loss}) para garantir a convergência e evitar \textit{overfitting}.
+
+Os resultados confirmaram a eficácia do modelo \textit{best.pt}, que atingiu \textit{mAP@50} de 0,995 e \textit{mAP@50-95} de 0,966, com latência de inferência de 19,5 ms por imagem, confirmando a robustez do sistema para aplicações de reconhecimento facial.
 
 
 \subsection{Extração e Vetorização de Características Faciais}
