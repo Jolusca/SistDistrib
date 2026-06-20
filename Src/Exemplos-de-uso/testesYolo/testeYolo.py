@@ -1,33 +1,36 @@
+import os
+os.environ['QT_QPA_PLATFORM'] = 'xcb'
 import cv2
 from ultralytics import YOLO
 
-# Configurações
-#stream_url = "http://192.168.18.103:8080/video"#Ajustar o IP para cada iteração
-modelo = YOLO("yolov8n.pt")  # Modelo nano
-frame_skip = 2  # Pula frames
-frame_count = 0
+# 1. Carrega o modelo
+model_path = '/home/lucas/git/SistDistrib/runs/detect/train-3/weights/best.pt'
+modelo = YOLO(model_path)
 
-# # Abre o stream
-# cap = cv2.VideoCapture(stream_url, cv2.CAP_FFMPEG)
-cap = cv2.VideoCapture(0, cv2.CAP_FFMPEG)
+# 2. Inicializa a captura fora do loop
+cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-while True:
+# 3. Cria a janela uma única vez antes do loop
+cv2.namedWindow("Detecção de Rosto - YOLOv8", cv2.WINDOW_NORMAL)
+
+while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
+        print("Erro: Não foi possível ler a câmera.")
         break
 
-    frame_count += 1
-    if frame_count % frame_skip != 0:
-        continue
-
-    # Detecção 2 Para carros, 11 para placa de pare
-    resultados = modelo(frame, classes=[11], show=False)
+    # 4. Predição com imgsz reduzido para velocidade
+    resultados = modelo.predict(frame, conf=0.5, verbose=False, imgsz=320)
+    
+    # 5. Extrai o frame plotado
     frame_processado = resultados[0].plot()
 
-    # Exibe
-    cv2.imshow("YOLO + Camera IP", frame_processado)
+    # 6. Exibe na janela já criada
+    cv2.imshow("Detecção de Rosto - YOLOv8", frame_processado)
+    
+    # O waitKey é vital. O tempo de 1ms é o padrão para tempo real
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
