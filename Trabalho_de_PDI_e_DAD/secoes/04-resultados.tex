@@ -1,20 +1,7 @@
-\section{Resultados e Discussão}
+\section{Conclusão}
 
-\subsection{Avaliação Técnica:} Eficiência do algoritmo geométrico local frente a variações de iluminação e latência média do processo na nuvem.
+O projeto confirmou a eficácia de sistemas biométricos distribuídos para controle de acesso, integrando processamento local e nuvem para garantir segurança e performance. A arquitetura centralizada assegura uma gestão auditável e escalável, atendendo aos requisitos de alta confiabilidade corporativa.
 
-\subsection{Conclusão:} Benefícios do modelo híbrido em termos de escalabilidade, custo sob demanda e economia de recursos de infraestrutura.
-\begin{table}[ht]
-\centering
-\caption{Template de tabela}
-\label{tab:knn_metrics}
-\begin{tabular}{lcc}
-\hline
-\textbf{Métrica} & \textbf{Classe Normal} & \textbf{Classe Anomalia} \\
-\hline
-Precision & 0.99 & 0.99 \\
-Recall    & 0.99 & 0.99 \\
-F1-Score  & 0.99 & 0.99 \\
-Support   & 4034 & 3524 \\
-\hline
-\end{tabular}
-\end{table}
+No âmbito da visão computacional, o uso do \textit{ArcFace} com processamento local reduziu gargalos de latência e tráfego de rede. Ao enviar apenas vetores validados e de alta qualidade para a tomada de decisão remota, o sistema superou as limitações de soluções que dependem do processamento de imagens brutas.
+
+Para trabalhos futuros, recomenda-se a implementação de algoritmos de detecção de vivacidade (\textit{liveness detection}) para elevar a segurança contra fraudes que envolvam o uso de fotos e vídeos ao invés de rostos reais. Adicionalmente, a otimização dos modelos para hardware de borda permitirá escalar a solução para mais dispositivos, mantendo a eficiência operacional alcançada.
