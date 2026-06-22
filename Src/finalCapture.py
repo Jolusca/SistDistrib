@@ -44,9 +44,10 @@ def enviar_para_aws(embedding, face_img):
         return "Erro de Conexão"
 
 def iniciar_catraca():
-    model = YOLO('Src/modeloYoloTreinado.pt')
+    model = YOLO('modeloYoloTreinado.pt')
 
-    cap = cv2.VideoCapture(0)
+    #cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture("http://192.168.18.10:8080/video")
     
     ultimo_envio = 0
     COOLDOWN_SEGUNDOS = 5  # Espera 5 segundos após enviar uma foto para não sobrecarregar a AWS
@@ -93,7 +94,7 @@ def iniciar_catraca():
             if rosto_bom:
                 # Desenha quadrado amarelo na hora de processar
                 cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 255), 2)
-                cv2.putText(frame, "Processando na Nuvem...", (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                #cv2.putText(frame, "Processando na Nuvem...", (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.imshow("Sistema de Ponto Distribuido", frame)
                 cv2.waitKey(1) # Força a atualização da janela instantaneamente
                 
@@ -106,7 +107,8 @@ def iniciar_catraca():
                 
                 # Define a cor baseado na resposta (Verde para sucesso, Vermelho para erro/negado)
                 cor_status = (0, 255, 0) if status_acesso == "Acesso Liberado" else (0, 0, 255)
-                
+
+
                 # Desenha a resposta na tela
                 cv2.rectangle(frame, (startX, startY), (endX, endY), cor_status, 4)
                 cv2.putText(frame, status_acesso, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, cor_status, 3)
