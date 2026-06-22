@@ -2,8 +2,36 @@
 
 Nessa sessão, detalhamos o pipeline de processamento de imagens implementado na camada de borda do sistema, que é responsável por capturar as imagens faciais, isolar a região de interesse (ROI) e extrair os vetores de características utilizando o modelo ArcFace. O processo é organizado em etapas sequenciais, cada uma desempenhando um papel crucial para garantir a eficiência e a precisão do reconhecimento facial.
 
-\subsection{Pipeline de Visão Computacional:} Descrição das Etapas locais de tratamento da imagem 
+\subsection{Pipeline de Visão Computacional}
 
+O fluxo de processamento de dados biométricos foi estruturado para assegurar a eficiência, a qualidade da amostra e a confiabilidade na comunicação remota. O processo é composto por cinco etapas fundamentais, representadas na Figura~\ref{fig:fluxograma_PDI}:
+
+\begin{figure}[htbp]
+    \centering
+    \caption{Funcionamento da pipeline de processamento de imagens e extração de características faciais.}
+    \vspace{-10pt}
+    \includegraphics[width=0.8\textwidth ,  keepaspectratio]{images/flowchartPDI.png}
+    \par\vspace{6pt} % Pequeno espaçamento opcional entre a imagem e a legenda
+    \label{fig:fluxograma_PDI}
+    \footnotesize Fonte: Elaborada pelo autor.
+\end{figure}
+
+
+
+
+\subsubsection{Descrição das Etapas}
+
+\begin{enumerate}
+    \item \textbf{Captação e Normalização:} O sistema inicia com a captura do fluxo de vídeo via interface \texttt{cv2}. Aplica-se uma transformação geométrica rotacional ao quadro, garantindo a orientação correta antes do processamento. Esta etapa é essencial para padronizar os dados de entrada e prevenir erros de inferência derivados de discrepâncias na orientação física da câmera.
+
+    \item \textbf{Detecção e Extração de ROI:} O modelo YOLO atua como filtro primário. Através de redes convolucionais, o sistema localiza a face na cena e extrai as coordenadas da Região de Interesse (ROI). Este procedimento reduz o custo computacional, isolando apenas a área facial para as etapas subsequentes.
+
+    \item \textbf{Auditoria de Qualidade:} Antes da vetorização, realiza-se uma análise técnica rigorosa para garantir a integridade da imagem. São verificadas métricas de nitidez (via operador Laplaciano), nível de brilho e área mínima da face. Apenas recortes que cumprem os critérios de conformidade — evitando imagens borradas, superexpostas ou distantes — prosseguem no \textit{pipeline}.
+    
+    \item \textbf{Vetorização (Embedding):} A face validada é convertida pelo modelo \textit{ArcFace} em um vetor numérico de alta dimensionalidade (\textit{embedding}), que sintetiza as características geométricas únicas do indivíduo para posterior comparação matemática.
+
+    \item \textbf{Comunicação e Validação Remota:} O \textit{embedding} e a imagem são transmitidos para a infraestrutura de nuvem, onde o sistema processa a consulta, valida a identidade e retorna o status da autorização de acesso ao ponto de origem.
+\end{enumerate}
 
 \subsection{Isolamento da Região de Interesse (ROI):}
 
