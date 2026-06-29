@@ -82,11 +82,14 @@ def lambda_handler(event, context):
         if resultados and resultados[0]['score'] > 0.60:
             melhor_match = resultados[0]
             id_funcionario = str(melhor_match['id'])
+            # Puxa o nome da pessoa lá do banco Qdrant, se não tiver nome usa o ID
+            nome_funcionario = melhor_match.get('payload', {}).get('nome', f"ID: {id_funcionario}")
             score = melhor_match['score']
             status_acesso = "Acesso Liberado"
             status_code = 200
         else:
             id_funcionario = "Desconhecido"
+            nome_funcionario = "Funcionário Desconhecido"
             score = resultados[0]['score'] if resultados else 0.0
             status_acesso = "Acesso Negado"
             status_code = 403
@@ -109,6 +112,7 @@ def lambda_handler(event, context):
             "statusCode": status_code,
             "body": json.dumps({
                 "mensagem": status_acesso,
+                "nome_funcionario": nome_funcionario,
                 "porta": porta,
                 "horario": timestamp_oficial
             })
