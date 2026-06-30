@@ -33,11 +33,12 @@ def enviar_para_aws(embedding, face_img):
         if resposta.status_code in [200, 403]:
             resp_json = resposta.json()
             mensagem = resp_json.get("mensagem", "Sem mensagem")
-            print(f"AWS Respondeu [{resposta.status_code}]: {mensagem}")
-            return mensagem
+            nome_funcionario = resp_json.get("nome_funcionario", "Funcionário Desconhecido")
+            print(f"AWS Respondeu [{resposta.status_code}]: {mensagem} - {nome_funcionario}")
+            return mensagem, nome_funcionario
         else:
             print(f"Erro inesperado da AWS: {resposta.status_code} - {resposta.text}")
-            return "Erro no Servidor"
+            return "Erro no Servidor", "Desconhecido"
             
     except Exception as e:
         print(f"Erro de conexão com a AWS: {e}")
@@ -103,7 +104,7 @@ def iniciar_catraca():
                 embedding = resultado[0]["embedding"]
                 
                 # Chamada na AWS (Trava a execução até a AWS responder)
-                status_acesso = enviar_para_aws(embedding, face)
+                status_acesso, nome_funcionario = enviar_para_aws(embedding, face)
                 
                 # Define a cor baseado na resposta (Verde para sucesso, Vermelho para erro/negado)
                 cor_status = (0, 255, 0) if status_acesso == "Acesso Liberado" else (0, 0, 255)
@@ -111,7 +112,10 @@ def iniciar_catraca():
 
                 # Desenha a resposta na tela
                 cv2.rectangle(frame, (startX, startY), (endX, endY), cor_status, 4)
-                cv2.putText(frame, status_acesso, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, cor_status, 3)
+                
+                # Junta o Status e o Nome para escrever na tela
+                texto_tela = f"{status_acesso} - {nome_funcionario}"
+                cv2.putText(frame, texto_tela, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, cor_status, 2)
                 cv2.imshow("Sistema de Ponto Distribuido", frame)
                 
                 # Pausa a tela com a resposta por 2.5 segundos para a pessoa ler
