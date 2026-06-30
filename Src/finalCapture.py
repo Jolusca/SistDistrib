@@ -48,7 +48,7 @@ def iniciar_catraca():
     model = YOLO('modeloYoloTreinado.pt')
 
     #cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture("http://192.168.18.10:8080/video")
+    cap = cv2.VideoCapture(os.getenv("QDRANT_URL").strip().rstrip('/'))
     
     ultimo_envio = 0
     COOLDOWN_SEGUNDOS = 5  # Espera 5 segundos após enviar uma foto para não sobrecarregar a AWS

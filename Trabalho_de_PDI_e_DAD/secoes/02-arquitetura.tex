@@ -15,7 +15,7 @@ O sistema proposto foi modelado sob o paradigma cliente-servidor fracamente acop
 
 Conforme observado no diagrama, o fluxo operacional iniciou no ambiente local com a captura de vídeo pelo dispositivo de entrada e o processamento da imagem para a detecção e o alinhamento facial. Na sequência, foi utilizado um modelo para extração de vetores de características com base no rosto alinhado e realizado o envio para a camada em nuvem. 
 
-Ao atingir a camada em nuvem, é realizado o processamento e roteamento das requisições para o serviço de busca vetorial, que retorna o resultado da consulta. O sistema então processa a resposta e, com base no resultado, toma a decisão de liberar ou recusar o acesso, realizando uma ultima validação e atualizando o histórico de acesso no banco de dados relacional.
+Ao atingir a camada em nuvem, é realizado o processamento e roteamento das requisições para o serviço de busca vetorial, que retorna o resultado da consulta. O sistema então processa a resposta e, com base no resultado, toma a decisão de liberar ou recusar o acesso, realizando uma ultima validação e atualizando o histórico de acesso no banco de dados NoSQL.
 
 
 \subsection{Topologia da Rede e Desacoplamento de Nós}
@@ -74,3 +74,16 @@ A escolha da AWS para esta camada se deve à sua robustez, escalabilidade e ampl
 Já no que se refere ao Qdrant Cloud, ele é utilizado como o serviço de banco de dados especializado para armazenar os vetores de características faciais e realizar as consultas de similaridade. O Qdrant é otimizado para lidar com grandes volumes de dados vetoriais e oferece uma API eficiente para indexação e busca, o que o torna ideal para este tipo de aplicação. \cite{qdrant2024query}
 
 Para isso, a Função Lambda da AWS realiza uma consulta do tipo query\_points, enviando o vetor de características recebido do cliente e solicitando o retorno do ponto mais próximo na coleção do Qdrant. O serviço processa a consulta utilizando algoritmos de busca vetorial e retorna os resultados, que são então interpretados pela função Lambda para determinar a resposta final ao cliente. Essa integração entre a AWS e o Qdrant Cloud permite que o sistema aproveite as vantagens de ambos os serviços, garantindo uma operação eficiente e escalável para o reconhecimento facial distribuído.
+
+\subsection{Amazon S3 (Simple Storage Service)}
+Para garantir a rastreabilidade e a segurança do sistema, todas as tentativas de acesso 
+são auditadas utilizando dois serviços complementares da AWS. Assim que a Função Lambda 
+recebe a requisição, a imagem do rosto capturado pelo cliente, onde é enviada codificada
+no formato Base64, é decodificada e armazenada como evidência visual no Amazon S3 
+(Simple Storage Service).
+
+Simultaneamente, os metadados da transação (como data, hora, identificação da porta, 
+pontuação de similaridade do Qdrant e o link público para a foto no S3) são persistidos 
+no Amazon DynamoDB, um banco de dados NoSQL altamente escalável. Essa abordagem garante 
+um histórico de logs imutável e de acesso rápido, permitindo consultas e auditorias 
+futuras sem sobrecarregar a camada de processamento vetorial.
