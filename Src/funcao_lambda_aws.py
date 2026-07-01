@@ -81,7 +81,8 @@ def lambda_handler(event, context):
         # Avaliar o Acesso
         if resultados and resultados[0]['score'] > 0.60:
             melhor_match = resultados[0]
-            id_funcionario = str(melhor_match['id'])
+            # O ID real do funcionario agora fica no payload, pois o 'id' do ponto é um UUID aleatório
+            id_funcionario = str(melhor_match.get('payload', {}).get('id_funcionario', melhor_match['id']))
             # Puxa o nome da pessoa lá do banco Qdrant, se não tiver nome usa o ID
             nome_funcionario = melhor_match.get('payload', {}).get('nome', f"ID: {id_funcionario}")
             score = melhor_match['score']

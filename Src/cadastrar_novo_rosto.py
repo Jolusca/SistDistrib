@@ -1,14 +1,15 @@
 import os
 import json
 import urllib.request
+import uuid
 from deepface import DeepFace
 from dotenv import load_dotenv
 
 load_dotenv()
 
-caminho_imagem = "Src/imagensdeTeste/perfil_Joao_Lucas.jpeg".strip()
+caminho_imagem = "Src/imagensdeTeste/Foto de 2026-06-30 12-40-33.838253.jpeg".strip()
 if not os.path.exists(caminho_imagem):
-    print(f"\n❌ Erro: O arquivo {caminho_imagem} não foi encontrado.")
+    print(f"\nErro: O arquivo {caminho_imagem} não foi encontrado.")
     exit(1)
 
 nome_funcionario = "João Lucas".strip()
@@ -30,9 +31,10 @@ url_upsert = f"{qdrant_url}/collections/identidades_rostos/points"
 payload = {
     "points": [
         {
-            "id": int(id_funcionario),
+            "id": str(uuid.uuid4()),
             "vector": vetor_real,
             "payload": {
+                "id_funcionario": int(id_funcionario),
                 "nome": nome_funcionario,
                 "arquivo_origem": os.path.basename(caminho_imagem)
             }
