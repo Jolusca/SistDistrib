@@ -75,7 +75,7 @@ Já no que se refere ao Qdrant Cloud, ele é utilizado como o serviço de banco 
 
 Para isso, a Função Lambda da AWS realiza uma consulta do tipo query\_points, enviando o vetor de características recebido do cliente e solicitando o retorno do ponto mais próximo na coleção do Qdrant. O serviço processa a consulta utilizando algoritmos de busca vetorial e retorna os resultados, que são então interpretados pela função Lambda para determinar a resposta final ao cliente. Essa integração entre a AWS e o Qdrant Cloud permite que o sistema aproveite as vantagens de ambos os serviços, garantindo uma operação eficiente e escalável para o reconhecimento facial distribuído.
 
-\subsection{Amazon S3 (Simple Storage Service)}
+\subsection{Amazon S3 (Simple Storage Service) e Amazon DynamoDB}
 Para garantir a rastreabilidade e a segurança do sistema, todas as tentativas de acesso 
 são auditadas utilizando dois serviços complementares da AWS. Assim que a Função Lambda 
 recebe a requisição, a imagem do rosto capturado pelo cliente, onde é enviada codificada
