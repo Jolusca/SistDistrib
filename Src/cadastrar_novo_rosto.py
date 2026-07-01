@@ -7,13 +7,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-caminho_imagem = "Src/imagensdeTeste/Foto de 2026-06-30 12-40-33.838253.jpeg".strip()
+caminho_imagem = "Src/imagensdeTeste/photo_5_2026-07-01_01-44-46.jpg".strip()
 if not os.path.exists(caminho_imagem):
     print(f"\nErro: O arquivo {caminho_imagem} não foi encontrado.")
     exit(1)
 
-nome_funcionario = "João Lucas".strip()
-id_funcionario = "123456".strip()
+nome_funcionario = "Gabriel Miranda".strip()
+id_funcionario = "24".strip()
 qdrant_url = os.getenv("QDRANT_URL").strip().rstrip('/')
 qdrant_api_key = os.getenv("QDRANT_API_KEY").strip()
 
