@@ -1,5 +1,4 @@
-# Talvez a biblioteca so funcione em uma versão antiga do python (3.11.10)
-para usar as variáveis de ambiente, crie um arquivo com o nome " .env " com as chaves de API
+[Link do repositório da interface gráfica](https://github.com/jvlnunes/Interface-de-controle---Reconhecimento-Facial)
 
 # Planejamento de Projeto: Sistema de Ponto Eletrônico Distribuído (Arquitetura Híbrida)
 
