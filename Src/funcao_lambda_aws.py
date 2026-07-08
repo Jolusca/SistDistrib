@@ -12,8 +12,10 @@ s3 = boto3.client('s3')
 
 # Pega o nome da tabela e do bucket a partir das variáveis de ambiente na AWS
 NOME_TABELA_LOGS = os.environ.get('DYNAMO_TABLE_LOGS', 'LogsAcesso')
+NOME_TABELA_FUNCIONARIOS = os.environ.get('DYNAMO_TABLE_FUNCIONARIOS', 'Funcionarios')
 NOME_BUCKET_S3 = os.environ.get('S3_BUCKET_FOTOS', 'bucket-fotos-acesso')
 tabela_logs = dynamodb.Table(NOME_TABELA_LOGS)
+tabela_funcionarios = dynamodb.Table(NOME_TABELA_FUNCIONARIOS)
 
 def lambda_handler(event, context):
     try:
@@ -86,8 +88,24 @@ def lambda_handler(event, context):
             # Puxa o nome da pessoa lá do banco Qdrant, se não tiver nome usa o ID
             nome_funcionario = melhor_match.get('payload', {}).get('nome', f"ID: {id_funcionario}")
             score = melhor_match['score']
-            status_acesso = "Acesso Liberado"
-            status_code = 200
+            
+            # Verificação de Autorização de Porta via DynamoDB
+            tem_acesso = False
+            try:
+                resposta_db = tabela_funcionarios.get_item(Key={'id_funcionarios': id_funcionario})
+                if 'Item' in resposta_db:
+                    portas_autorizadas = resposta_db['Item'].get('doors', [])
+                    if porta in portas_autorizadas:
+                        tem_acesso = True
+            except Exception as db_err:
+                print(f"Erro ao consultar permissão no DynamoDB: {db_err}")
+                
+            if tem_acesso:
+                status_acesso = "Acesso Liberado"
+                status_code = 200
+            else:
+                status_acesso = f"Acesso Negado - Porta Não Autorizada"
+                status_code = 403
         else:
             id_funcionario = "Desconhecido"
             nome_funcionario = "Funcionário Desconhecido"
